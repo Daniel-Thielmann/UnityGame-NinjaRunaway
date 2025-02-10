@@ -2,7 +2,8 @@
 
 ## Disciplina: Desenvolvimento de Jogos (DCC148)
 
-Este projeto é parte do Trabalho 1 da disciplina **Desenvolvimento de Jogos** do curso de Ciência da Computação na UFJF. O objetivo é desenvolver um jogo 2D utilizando Unity ou Godot, seguindo os requisitos especificados.
+Este projeto é parte do Trabalho 1 da disciplina **Desenvolvimento de Jogos** do curso de Ciência da Computação na UFJF. O objetivo é desenvolver um jogo 2D utilizando Unity, seguindo os requisitos especificados.
+**Para iniciar o jogo entre na pasta build e execute NinjaRunaway.exe**
 
 ---
 
