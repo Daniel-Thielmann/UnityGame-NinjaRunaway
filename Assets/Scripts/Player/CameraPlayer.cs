@@ -3,53 +3,68 @@ using UnityEngine;
 public class CameraPlayer : MonoBehaviour
 {
     public Transform playerCamera;
-    public float smoothSpeed = 0.125f;
+    public float smoothSpeed = 0.1f; // Suavização da câmera
     public GameObject player;
     private SpriteRenderer spriteRenderer;
-    private Vector3 currentOffset;
     private float targetZ; // Armazena a posição desejada no eixo Z
+    private Vector3 cameraOffset;
 
     void Start()
     {
         player = GameObject.Find("Player");
-        if (player != null)
-        {
-            spriteRenderer = player.GetComponent<SpriteRenderer>();
-        }
-        else
+        if (player == null)
         {
             Debug.LogError("Player não encontrado na cena!");
+            return;
         }
 
-        // Define o offset inicial e o Z inicial
-        currentOffset = new Vector3(4.5f, 0, playerCamera.position.z);
-        targetZ = transform.position.z;
+        spriteRenderer = player.GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            Debug.LogError("SpriteRenderer não encontrado no Player!");
+            return;
+        }
+
+        // 🔹 Ajustando a câmera para ficar mais próxima do jogador
+        cameraOffset = new Vector3(0f, 1f, -3f); // Z aproximado para mais proximidade
+        targetZ = cameraOffset.z; // Mantém a profundidade ajustada
+    }
+
+    void LateUpdate()
+    {
+        if (player == null) return;
+
+        // Mantém a câmera fixa acima da cabeça do jogador
+        Vector3 desiredPosition = player.transform.position + cameraOffset;
+
+        // Suaviza a transição da câmera sem tremedeira
+        transform.position = Vector3.Slerp(transform.position, desiredPosition, smoothSpeed);
+
+        // Garante que o eixo Z permaneça constante
+        transform.position = new Vector3(transform.position.x, transform.position.y, targetZ);
     }
 
     void FixedUpdate()
     {
-        if (spriteRenderer != null)
-        {
-            // Calcula o offset alvo com base na direção do personagem
-            Vector3 targetOffset = spriteRenderer.flipX
-                ? new Vector3(-4.5f, 0, playerCamera.position.z) // Offset para a esquerda
-                : new Vector3(4.5f, 0, playerCamera.position.z); // Offset para a direita
+        if (spriteRenderer == null) return;
 
-            currentOffset = Vector3.Lerp(currentOffset, targetOffset, smoothSpeed);
+        // Calcula o offset alvo com base na direção do personagem
+        Vector3 targetOffset = spriteRenderer.flipX
+            ? new Vector3(-2f, 1.1f, targetZ) // Ajustado para uma visão mais próxima
+            : new Vector3(2f, 1.1f, targetZ); // Ajustado para uma visão mais próxima
 
-            Vector3 desiredPosition = player.transform.position + currentOffset;
-            transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
-        }
+        cameraOffset = Vector3.Lerp(cameraOffset, targetOffset, smoothSpeed);
 
-        if (player.GetComponent<PlayerControl>().animator.GetBool("glider") || player.GetComponent<PlayerControl>().animator.GetBool("climbMove"))
-        {
-            targetZ = -5;
-        }
-        else
-        {
-            targetZ = 0;
-        }
+        // Define a posição desejada da câmera
+        Vector3 desiredPosition = player.transform.position + cameraOffset;
 
-        transform.position = new Vector3(transform.position.x, transform.position.y, Mathf.Lerp(transform.position.z, targetZ, smoothSpeed));
+        // Ajusta a altura da câmera para manter a visão do jogador centralizada
+        desiredPosition.y = player.transform.position.y + 1.1f; // Reduzido para mais proximidade
+
+        // Aplica a posição suavizada
+        transform.position = Vector3.Slerp(transform.position, desiredPosition, smoothSpeed);
+
+        // Mantém a câmera sempre próxima do jogador
+        transform.position = new Vector3(transform.position.x, transform.position.y, targetZ);
     }
 }
